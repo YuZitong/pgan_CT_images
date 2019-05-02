@@ -67,10 +67,14 @@ def convert_to_pil_image(image, drange=[0,1]):
         else:
             image = image.transpose(1, 2, 0) # CHW -> HWC
 
-    image = adjust_dynamic_range(image, drange, [0,255])
-    image = np.rint(image).clip(0, 255).astype(np.uint8)
-    format = 'RGB' if image.ndim == 3 else 'L'
-    return PIL.Image.fromarray(image, format)
+    image = adjust_dynamic_range(image, drange, [0,65535])
+    image = np.rint(image).clip(0, 65535).astype(np.uint16)
+    # format = 'RGB' if image.ndim == 3 else 'L'
+    # return PIL.Image.fromarray(image, format)
+
+    # Custom code for saving in 16 bit
+    img = PIL.Image.new("I",image.T.shape)          # <-- this will change if you use
+    return img.frombytes(image.tobytes(),'raw',"I;16")     # <-- a different data type
 
 def save_image(image, filename, drange=[0,1], quality=95):
     img = convert_to_pil_image(image, drange)

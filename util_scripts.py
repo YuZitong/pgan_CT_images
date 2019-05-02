@@ -39,8 +39,8 @@ def generate_fake_images(run_id, snapshot=None, grid_size=[1,1], num_pngs=1, ima
         print('Generating png %d / %d...' % (png_idx, num_pngs))
         latents = misc.random_latents(np.prod(grid_size), Gs, random_state=random_state)
         labels = np.zeros([latents.shape[0], 0], np.float32)
-        images = Gs.run(latents, labels, minibatch_size=minibatch_size, num_gpus=config.num_gpus, out_mul=127.5, out_add=127.5, out_shrink=image_shrink, out_dtype=np.uint8)
-        misc.save_image_grid(images, os.path.join(result_subdir, '%s%06d.png' % (png_prefix, png_idx)), [0,255], grid_size)
+        images = Gs.run(latents, labels, minibatch_size=minibatch_size, num_gpus=config.num_gpus, out_mul=32767.5, out_add=32767.5, out_shrink=image_shrink, out_dtype=np.uint16)
+        misc.save_image_grid(images, os.path.join(result_subdir, '%s%06d.png' % (png_prefix, png_idx)), [0,65535], grid_size)
     open(os.path.join(result_subdir, '_done.txt'), 'wt').close()
 
 #----------------------------------------------------------------------------
@@ -68,7 +68,7 @@ def generate_interpolation_video(run_id, snapshot=None, grid_size=[1,1], image_s
         frame_idx = int(np.clip(np.round(t * mp4_fps), 0, num_frames - 1))
         latents = all_latents[frame_idx]
         labels = np.zeros([latents.shape[0], 0], np.float32)
-        images = Gs.run(latents, labels, minibatch_size=minibatch_size, num_gpus=config.num_gpus, out_mul=127.5, out_add=127.5, out_shrink=image_shrink, out_dtype=np.uint8)
+        images = Gs.run(latents, labels, minibatch_size=minibatch_size, num_gpus=config.num_gpus, out_mul=32767.5, out_add=32767.5, out_shrink=image_shrink, out_dtype=np.uint16)
         grid = misc.create_image_grid(images, grid_size).transpose(1, 2, 0) # HWC
         if image_zoom > 1:
             grid = scipy.ndimage.zoom(grid, [image_zoom, image_zoom, 1], order=0)
